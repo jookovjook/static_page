@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Magick-WASM Example</title>
+    <script type="module">
+        // Import the library to talk to imagemagick
+        import * as theWholeLot from './index.umd.js';
+        const entireMagickLibrary = window['magick-wasm'];
+
+        // Initialize
+        await entireMagickLibrary.initializeImageMagick();
+
+        // Declare Magick and ImageMagick
+        const Magick = entireMagickLibrary.Magick;
+        const ImageMagick = entireMagickLibrary.ImageMagick;
+        const MagickFormat = entireMagickLibrary.MagickFormat;
+        const MagickColor = entireMagickLibrary.MagickColor;
+
+        // Create and set up file input
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*,.heif,.heic,.psd';
+        document.body.appendChild(fileInput);
+
+        fileInput.addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          const buffer = await file.arrayBuffer();
+          const data = new Uint8Array(buffer);
+          
+          // Get original file extension
+          const originalExtension = file.name.split('.').pop();
+          
+          ImageMagick.read(data, image => {
+            image.opaque(new MagickColor("#001582"), new MagickColor("#690B00"));
+            image.write(MagickFormat.Png, data => {
+              const blob = new Blob([data], { type: 'image/bmp' });
+
+              // Create a download link with original extension in filename
+              const downloadLink = document.createElement('a');
+              downloadLink.href = URL.createObjectURL(blob);
+              downloadLink.download = `output.${originalExtension}.bmp`;
+              downloadLink.textContent = `Download output.${originalExtension}.bmp`;
+
+              // Append the download link to the document
+              document.body.appendChild(downloadLink);
+            });
+          });
+        });
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
